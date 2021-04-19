@@ -14,6 +14,7 @@ class TimelineViewModel extends React.Component {
     super(props);
     this.extractDateVariables = this.extractDateVariables.bind(this)
     this.numDaysFromReference = this.numDaysFromReference.bind(this)
+    this.updateName = this.updateName.bind(this);
 
     let initializedTimelineItems = this.initializeTimelineItems(props.timelineItems);
 
@@ -30,8 +31,6 @@ class TimelineViewModel extends React.Component {
     let containerHeight = props.windowHeight - (2 * BUFFER);
     let containerWidth = props.windowWidth - (2 * BUFFER);
 
-    console.log(initializedTimelineItems);
-
     this.state = {
       timelineItems: initializedTimelineItems,
       earliestDate: firstDate,
@@ -39,6 +38,22 @@ class TimelineViewModel extends React.Component {
       containerHeight: containerHeight,
       containerWidth: containerWidth,
     };
+  }
+
+  /*
+  */
+  updateName(id, newName) {
+    let items = this.state.timelineItems;
+
+    for(let i = 0; i < items.length; i++) {
+      if(items[i].id==id) {
+        items[i].name = newName;
+        items[i].textEstimatedLength = newName.length * ESTMINATED_WIDTH_OF_LETTER;
+      }
+    }
+    this.setState({
+      timelineItems: items,
+    })
   }
 
   /*  This function converts the initial timeline items into a format that's easier to manipulate
@@ -97,7 +112,7 @@ class TimelineViewModel extends React.Component {
       return false;
     } else if (year % 100 > 0) {
       return true;
-    } else if ((year) % 400 > 0) { //1900 is not a leap year but 2000 is for some reason.
+    } else if ((year) % 400 > 0) {  //The year 2000 was a leap year, for example, but the years 1700, 1800, and 1900 were not. 
       return false;
     } else {
       return true;
@@ -121,7 +136,7 @@ class TimelineViewModel extends React.Component {
     }
     month --;
     let day = leftoverDays - dayOfTheYear[month];
-    dateObj = {
+    let dateObj = {
       year: year,
       month: month,
       day: day,
@@ -171,6 +186,8 @@ class TimelineViewModel extends React.Component {
               itemList={this.state.timelineItems}
               earliestDate = {this.state.earliestDate}
               latestDate = {this.state.latestDate}
+              dateObjFromNumDays = {this.dateObjFromNumDays}
+              updateName = {this.updateName}
             >
 
             </TimelineItemSorterViewModel>
@@ -181,5 +198,11 @@ class TimelineViewModel extends React.Component {
   }
 
 }
+
+TimelineViewModel.propTypes = {
+  containerWidth: PropTypes.number,
+  containerHeight: PropTypes.number,
+  timelineItems: PropTypes.array,
+};
 
 export default TimelineViewModel;

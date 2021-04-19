@@ -5,6 +5,7 @@ import TimelineItemViewModel from './TimelineItemViewModel'
 
 import TimelineRowContainerView from '../Views/TimelineRowContainerView';
 import SpacerBetweenItemsView from '../Views/SpacerBetweenItemsView';
+import TimeAxisViewModel from './TimeAxisViewModel';
 
 /* This class takes in the list of timeline items and organizes the items into rows
 **
@@ -16,12 +17,22 @@ class TimelineItemSorterViewModel extends React.Component {
     this.greedyItemSort = this.greedyItemSort.bind(this);
     this.formatRow = this.formatRow.bind(this);
     this.formatRows = this.formatRows.bind(this);
+    this.updateRowInfo = this.updateRowInfo.bind(this);
 
     let rowInfo = this.greedyItemSort();
     this.state = {
       rowInfo: rowInfo
     }
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    let newRowInfo = this.greedyItemSort();
+    //check if new edit will collide with another item and require an update to the rows
+    if(newRowInfo.length != prevState.rowInfo.length) 
+    {
+      this.updateRowInfo(newRowInfo);
+    }
+  } 
 
   calculateLengthOfTimeBar(itemStart, itemEnd) {
     const {
@@ -31,21 +42,31 @@ class TimelineItemSorterViewModel extends React.Component {
     return (horizontalGridUnit / gridTimeUnit) * (itemEnd - itemStart + 1)
   }
 
+  updateRowInfo(newRowInfo) {
+    this.setState({
+      rowInfo: newRowInfo,
+    });
+  }
+
   greedyItemSort() {
     const {
       itemList,
       earliestDate,
     } = this.props;
 
+    //if list is empty return
+    if(itemList.length == 0) {
+      return null;
+    }
+
     let sortedItemList = itemList.sort(function(a, b){
       return a.startNumDays - b.startNumDays;
     })
 
     let rowInfo = [];
-
-
     let firstArr = [];
 
+    //add in first variable
     let timeBarInPixels = this.calculateLengthOfTimeBar(sortedItemList[0].startNumDays, sortedItemList[0].endNumDays)
     firstArr.push(sortedItemList[0])
     rowInfo[0] = {
@@ -54,12 +75,20 @@ class TimelineItemSorterViewModel extends React.Component {
       id: 1,
     };
 
+    //return early if only one item in list
+    if(itemList.length == 1) {
+      return rowInfo;
+    }
+
     for(let i = 1; i< sortedItemList.length; i++) {
       let curItem = sortedItemList[i];
 
       let rowNum = 0;
-      //find what row the current item belongs to
+      
+      //calculate the amount of pixels from the start of the frame
       let distanceFromStart = this.calculateLengthOfTimeBar(earliestDate, curItem.startNumDays)
+
+      //find what row the current item belongs to
       while (rowNum < rowInfo.length && distanceFromStart < rowInfo[rowNum].latestVal) {
         rowNum++;
       }
@@ -68,7 +97,10 @@ class TimelineItemSorterViewModel extends React.Component {
       if (rowNum < rowInfo.length) {
         //edit current row
         rowInfo[rowNum].itemsInRow.push(curItem);
-        rowInfo[rowNum].latestVal = distanceFromStart + Math.max(timeBarInPixels,curItem.textEstimatedLength);
+
+        //update latestVal to represent the rightmost distance
+        //choose between which element needs more space the text or the time bar
+        rowInfo[rowNum].latestVal = distanceFromStart + Math.max(timeBarInPixels,curItem.textEstimatedLength); 
       } else {
         //add new row
         let newArr = [];
@@ -80,7 +112,6 @@ class TimelineItemSorterViewModel extends React.Component {
         });
       }
     }
-    console.log(rowInfo);
     return rowInfo;
 
   }
@@ -91,8 +122,8 @@ class TimelineItemSorterViewModel extends React.Component {
       horizontalGridUnit,
       verticalGridUnit,
       earliestDate,
-      latestDate,
       gridTimeUnit,
+      updateName,
     } = this.props;
 
     let prevBoundary = earliestDate;
@@ -124,6 +155,7 @@ class TimelineItemSorterViewModel extends React.Component {
               id = {item.id}
               name= {item.name}
               textWidth = {item.textEstimatedLength}
+              updateName = {updateName}
             />
           </React.Fragment>
         );
@@ -154,17 +186,45 @@ class TimelineItemSorterViewModel extends React.Component {
 
   render() {
     const {
-      rowInfo,
-    } = this.state;
+      earliestDate,
+      latestDate,
+      containerWidth,
+      verticalGridUnit,
+      dateObjFromNumDays,
+      horizontalGridUnit,
+      gridTimeUnit,
+    } = this.props;
 
     let formattedRows = this.formatRows()
     return (
       <React.Fragment>
+        <TimeAxisViewModel
+          dateObjFromNumDays={dateObjFromNumDays}
+          earliestDate={earliestDate}
+          latestDate={latestDate}
+          width={containerWidth}
+          height={verticalGridUnit}
+          horizontalGridUnit={horizontalGridUnit}
+          gridTimeUnit={gridTimeUnit}
+        />
         {formattedRows}
       </React.Fragment>
     );
   }
 }
 
+TimelineItemSorterViewModel.propTypes = {
+  id: PropTypes.number,
+  itemList: PropTypes.array,
+  updateName: PropTypes.func,
+  name: PropTypes.string,
+  earliestDate: PropTypes.number,
+  latestDate: PropTypes.number,
+  containerWidth: PropTypes.number,
+  verticalGridUnit: PropTypes.number,
+  dateObjFromNumDays: PropTypes.func,
+  horizontalGridUnit: PropTypes.number,
+  gridTimeUnit: PropTypes.number,
+};
 
-export default TimelineItemSorterViewModel
+export default TimelineItemSorterViewModel;
