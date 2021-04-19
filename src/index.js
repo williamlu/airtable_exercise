@@ -2,11 +2,18 @@ import React from "react";
 import {render} from "react-dom";
 import timelineItems from "./timelineItems";
 import "./index.css";
+import TimelineViewModel from "./ViewModels/TimelineViewModel"
 
 const App = () => (
-  <div>
-    <h2>Start editing to see some magical funtimes happen {"\u2728"}</h2>
-    <h3>{timelineItems.length} timeline items to render</h3>
+  <div
+    className = {`TimelineApp`}
+  >
+    <h3>{window.innerWidth} x {window.innerHeight}</h3>
+    <TimelineViewModel
+      windowHeight = {window.innerHeight}
+      windowWidth = {window.innerWidth}
+      timelineItems = {timelineItems}
+    />
   </div>
 );
 
