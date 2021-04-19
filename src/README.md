@@ -25,15 +25,17 @@ I spent ~18hrs on this project
   -show the date when the user hovers over the handle
   -the ability to drag the handles the change the values
   -scaling the axis when the values when the values get too large or small
-  -
+  
 
 * How you made your design decisions. For example, if you looked at other timelines for inspiration, please note that.
   Timeline inspiration:
   Joseph Priestley, Specimen of a New Chart of Biography (1765)
   https://morphocode.com/the-representation-of-time-in-information-design/
+  I flipped through this page and setted on the new chart of biography to model my implementation.
 
   I was trying to take the paper timeline and add design elements that allow the user to interact with the components that make up the timeline element. e.g. the start and end bars and the text are all elements that the user can interact with. I didn't end up finishing,
 
 * How you would test this if you had more time.
   I would write test cases for the ViewModel componenets to test their logic. Just making sure that the greedySorting algorithm, leap year shenanigans, grid calculations works as expected. 
+  Testing out visual presentation of elements in a variety of windows. There can be weird behavior when the window sizes get too small
   I would test the presentation on a variety of browsers and devices to ensure consistency across platforms. 
